@@ -1,0 +1,30 @@
+(() => {
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const whatsapp = subject => 'https://wa.me/5511961580595?text=' + encodeURIComponent(subject === 'avaliação' ? 'Olá, Dra. Lidia! Conheci seu trabalho pelo site e gostaria de agendar uma avaliação.' : 'Olá, Dra. Lidia! Conheci seu trabalho pelo site e gostaria de saber mais sobre ' + subject + '.');
+document.querySelectorAll('[data-whatsapp]').forEach(a=>a.href=whatsapp(a.dataset.whatsapp));
+const menuButton=document.querySelector('.menu-toggle'),menu=document.querySelector('.mobile-menu'),main=document.querySelector('main');
+function setMenu(open,restore=false){menuButton.setAttribute('aria-expanded',String(open));menuButton.setAttribute('aria-label',open?'Fechar menu':'Abrir menu');menu.inert=!open;main.inert=open;menu.classList.toggle('is-open',open);document.body.classList.toggle('menu-open',open);if(open)menu.querySelector('a').focus();if(restore)menuButton.focus();}
+menuButton.addEventListener('click',()=>setMenu(menuButton.getAttribute('aria-expanded')!=='true'));
+menu.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>setMenu(false)));
+document.addEventListener('keydown',e=>{if(menuButton.getAttribute('aria-expanded')!=='true')return;if(e.key==='Escape')setMenu(false,true);if(e.key==='Tab'){const items=[menuButton,...menu.querySelectorAll('a')];if(e.shiftKey&&document.activeElement===items[0]){e.preventDefault();items.at(-1).focus();}else if(!e.shiftKey&&document.activeElement===items.at(-1)){e.preventDefault();items[0].focus();}}});
+matchMedia('(min-width:761px)').addEventListener('change',e=>{if(e.matches)setMenu(false);});
+const photos=[
+{title:'Preenchimento labial',src:'labios.jpg',alt:'Composição de um caso individual de preenchimento labial',subject:'preenchimento labial e o método Lial Lips',clinical:true},
+{title:'Lentes em resina',src:'lentes.jpg',alt:'Caso de lentes em resina divulgado pela profissional',subject:'lentes em resina',clinical:true},
+{title:'Clareamento dental',src:'clareamento.jpg',alt:'Sorriso apresentado na seção de clareamento dental da profissional',subject:'clareamento dental',clinical:true},
+{title:'Lidia / Portraits',src:'lidia-preto-02.jpg',alt:'Retrato frontal da Dra. Lidia Almeida',subject:'avaliação'},
+{title:'Essência / Identidade',src:'lidia-bege-01.jpg',alt:'Dra. Lidia Almeida em ensaio com traje bege',subject:'avaliação'},
+{title:'The art of being you',src:'lidia-preto-03.jpg',alt:'Dra. Lidia Almeida sorrindo em ensaio profissional',subject:'avaliação'},
+{title:'Um olhar para os detalhes',src:'lidia-produtos.jpg',alt:'Dra. Lidia Almeida segurando um produto no ensaio',subject:'harmonização facial'},
+{title:'Produtos & materiais',src:'ensaio-produtos.jpg',alt:'Produtos e materiais apresentados no ensaio',subject:'harmonização facial'},
+{title:'Personalidade / Presença',src:'lidia-preto-01.jpg',alt:'Dra. Lidia Almeida sentada em ensaio profissional',subject:'avaliação'},
+{title:'Cuidado em cada escolha',src:'lidia-bege-02.jpg',alt:'Dra. Lidia Almeida com produtos no ensaio',subject:'avaliação'}];
+const dialog=document.querySelector('.gallery-dialog');let index=0;
+function showPhoto(next){index=(next+photos.length)%photos.length;const p=photos[index],image=dialog.querySelector('.gallery-photo');image.src='assets/'+p.src;image.alt=p.alt;dialog.querySelector('#gallery-title').textContent=p.title;dialog.querySelector('#gallery-counter').textContent=(index+1)+' / '+photos.length;dialog.querySelector('#gallery-note').textContent=p.clinical?'Casos individuais. Resultados variam de pessoa para pessoa.':'Acervo de fotografias da Dra. Lidia Almeida.';const cta=dialog.querySelector('.gallery-cta');cta.href=whatsapp(p.subject);cta.textContent=p.clinical?'Conversar sobre este tratamento ↗':'Agendar minha avaliação ↗';}
+document.querySelectorAll('[data-photo]').forEach(b=>b.addEventListener('click',()=>{showPhoto(Number(b.dataset.photo));dialog.showModal();document.body.classList.add('gallery-open');}));
+dialog.querySelector('.gallery-close').addEventListener('click',()=>dialog.close());dialog.querySelector('.gallery-prev').addEventListener('click',()=>showPhoto(index-1));dialog.querySelector('.gallery-next').addEventListener('click',()=>showPhoto(index+1));dialog.addEventListener('close',()=>document.body.classList.remove('gallery-open'));dialog.addEventListener('click',e=>{if(e.target!==dialog)return;const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();});dialog.addEventListener('keydown',e=>{if(e.key==='ArrowRight')showPhoto(index+1);if(e.key==='ArrowLeft')showPhoto(index-1);});
+if('IntersectionObserver'in window&&!reduced){const observer=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target);}}),{threshold:.08});document.documentElement.classList.add('js-motion');document.querySelectorAll('.reveal').forEach(e=>observer.observe(e));}
+if(!reduced&&matchMedia('(hover:hover) and (pointer:fine)').matches){document.querySelectorAll('.magnetic').forEach(b=>{b.addEventListener('pointermove',e=>{const r=b.getBoundingClientRect(),x=(e.clientX-r.left-r.width/2)/9,y=(e.clientY-r.top-r.height/2)/6;b.style.transform='translate3d('+x+'px,'+y+'px,0)';});b.addEventListener('pointerleave',()=>b.style.transform='');});const hero=document.querySelector('.hero'),portrait=document.querySelector('.hero-portrait');let frame=0;hero.addEventListener('pointermove',e=>{if(frame)return;frame=requestAnimationFrame(()=>{portrait.style.setProperty('--portrait-x',((e.clientX/innerWidth-.5)*9)+'px');frame=0;});});hero.addEventListener('pointerleave',()=>portrait.style.setProperty('--portrait-x','0px'));}
+if('IntersectionObserver'in window){const ctaObserver=new IntersectionObserver(entries=>entries.forEach(e=>document.body.classList.toggle('hero-cta-visible',e.isIntersecting)),{threshold:.05});ctaObserver.observe(document.querySelector('.hero-cta'));}
+document.querySelector('#year').textContent=new Date().getFullYear();
+})();
